@@ -690,10 +690,10 @@ function buildDesktopPage(guestName, guests, dt, t, rows) {
     '*{margin:0;padding:0;box-sizing:border-box;}',
     'body{font-family:\'Noto Sans Georgian\',Georgia,sans-serif;color:#1A1410;background:#FAF7F2;}',
     '.page{background:#fff;max-width:700px;margin:0 auto;}',
-    /* Toolbar — always visible, not hidden on print */
     '.toolbar{background:#1A1410;padding:14px 20px;display:flex;align-items:center;justify-content:space-between;gap:10px;position:sticky;top:0;z-index:10;}',
-    '.toolbar span{color:#aaa;font-size:.75rem;letter-spacing:.04em;}',
     '.back-btn{background:transparent;color:#aaa;border:1px solid #555;padding:10px 16px;border-radius:8px;font-family:\'Noto Sans Georgian\',Georgia,sans-serif;font-size:.9rem;cursor:pointer;}',
+    '.pdf-btn{background:#C8952A;color:#fff;border:none;padding:12px 22px;border-radius:8px;font-family:\'Noto Sans Georgian\',Georgia,sans-serif;font-size:1rem;font-weight:600;cursor:pointer;}',
+    /* On desktop hide back button; on mobile keep both */
     '@media (hover:hover) and (pointer:fine) and (min-width:900px){.back-btn{display:none;}}',
     '.receipt{padding:24px 20px;}',
     'h1{font-size:22px;letter-spacing:.03em;text-align:center;}',
@@ -721,14 +721,23 @@ function buildDesktopPage(guestName, guests, dt, t, rows) {
     '@media print{',
     '  *{-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important;}',
     '  body{background:#fff;}',
-    '  .toolbar{display:none;}',
+    '  .toolbar{display:none!important;}',
     '  .page{max-width:100%;}',
     '  @page{margin:10mm;size:A4;}',
     '}'
   ].join('');
 
+  // Detect platform for button label
+  var ua = navigator.userAgent || '';
+  var isIOS = /iPad|iPhone|iPod/.test(ua);
+  var isAndroid = /Android/.test(ua);
+  var btnLabel = isIOS ? '📤 PDF შენახვა / გაგზავნა'
+               : isAndroid ? '📄 PDF შენახვა'
+               : '🖨 PDF სახით შენახვა';
+
   var toolbar = '<div class="toolbar">'
-    + '<button class="back-btn" onclick="history.back()">← მენიუზე დაბრუნება</button>'
+    + '<button class="back-btn" onclick="history.back()">← უკან</button>'
+    + '<button class="pdf-btn" onclick="window.print()">' + btnLabel + '</button>'
     + '</div>';
 
   var receipt = '<div class="receipt">'
