@@ -721,6 +721,7 @@ function buildDesktopPage(guestName, guests, dt, t, rows) {
     /* Toolbar — always visible, not hidden on print */
     '.toolbar{background:#1A1410;padding:14px 20px;display:flex;align-items:center;justify-content:space-between;gap:10px;position:sticky;top:0;z-index:10;}',
     '.toolbar span{color:#aaa;font-size:.75rem;letter-spacing:.04em;}',
+    '.back-btn{background:transparent;color:#aaa;border:1px solid #555;padding:10px 16px;border-radius:8px;font-family:\'Noto Sans Georgian\',Georgia,sans-serif;font-size:.9rem;cursor:pointer;}',
     /* Big share button — easy to tap on mobile */
     '.tb-btn{background:#C8952A;color:#fff;border:none;padding:12px 24px;border-radius:8px;font-family:\'Noto Sans Georgian\',Georgia,sans-serif;font-size:1rem;font-weight:600;cursor:pointer;white-space:nowrap;}',
     '.receipt{padding:24px 20px;}',
@@ -756,7 +757,7 @@ function buildDesktopPage(guestName, guests, dt, t, rows) {
   ].join('');
 
   var toolbar = '<div class="toolbar">'
-    + '<span>' + guestName + ' &nbsp;|&nbsp; ' + dt.date + '</span>'
+    + '<button class="back-btn" onclick="history.back()">← უკან</button>'
     + '<button class="tb-btn" onclick="window.print()">📤 გაგზავნა / PDF</button>'
     + '</div>';
 
@@ -788,30 +789,20 @@ function buildDesktopPage(guestName, guests, dt, t, rows) {
 }
 
 // =============================================================================
-// GENERATE PDF — open the HTML receipt page and trigger browser Print → Save as PDF
-// This guarantees the PDF looks identical to the on-screen preview.
-// No jsPDF, no separate rendering engine, no inconsistency.
+// SHOW RECEIPT — writes the receipt directly into the current page.
+// Works on iOS, Android, desktop — no popups, no blobs, no new tabs.
+// The receipt page has a 📤 button that calls window.print().
+// On iOS Safari: print = native share sheet → PDF, WhatsApp, Mail, Files etc.
+// On Android Chrome: print = system print → Save as PDF.
+// On Desktop: print = browser print dialog → Save as PDF.
 // =============================================================================
 function generateAndSharePDF(guestName, guests, dt, t) {
-  var btn = gel('ov-send');
-  if (btn) { btn.textContent = 'იხსნება…'; btn.disabled = true; }
-  function resetBtn() {
-    if (btn) { btn.textContent = '📤 გაგზავნა / PDF შენახვა'; btn.disabled = false; }
-  }
-
   var rows = buildRows();
   var html = buildDesktopPage(guestName, guests, dt, t, rows);
-  var blob = new Blob([html], { type: 'text/html;charset=utf-8' });
-  var url  = URL.createObjectURL(blob);
-
-  // Open in new tab — the page auto-triggers print dialog on load
-  var w = window.open(url, '_blank');
-  if (!w) {
-    // Popup blocked — fall back to same-window
-    window.location.href = url;
-  }
-  setTimeout(function() { URL.revokeObjectURL(url); }, 30000);
-  resetBtn();
+  // Write the receipt into the current page — works everywhere, no popup blocker
+  document.open();
+  document.write(html);
+  document.close();
 }
 
 function triggerDownload(blob, fileName) {
