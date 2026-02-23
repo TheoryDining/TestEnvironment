@@ -48,6 +48,8 @@ main { max-width:900px; margin:0 auto; padding:24px 16px 200px; }
 .ov-btn.send-btn:disabled { background:#777; }
 .ov-btn.close-btn { background:#333; color:#ccc; }
 #ov-body { padding:22px 18px 18px; font-size:12px; color:#1A1410; }
+#ov-footer { padding:12px 16px 16px; display:flex; justify-content:center; }
+#ov-footer .send-btn { width:100%; font-size:1rem; padding:14px; border-radius:8px; }
 .rc-head { text-align:center; border-bottom:2px solid #C8952A; padding-bottom:12px; margin-bottom:14px; }
 .rc-head h2 { font-family:'Noto Sans Georgian','Playfair Display',serif; font-size:20px; }
 .rc-head p { color:#8B7355; font-size:8px; text-transform:uppercase; letter-spacing:.1em; margin-top:2px; }
@@ -123,10 +125,12 @@ main { max-width:900px; margin:0 auto; padding:24px 16px 200px; }
   <div id="ov-panel">
     <div id="ov-bar">
       <span>შეკვეთა</span>
-      <button class="ov-btn send-btn" id="ov-send">&#128228; გაგზავნა / PDF შენახვა</button>
       <button class="ov-btn close-btn" id="ov-close">&#10005; დახურვა და შეცვლა</button>
     </div>
     <div id="ov-body"></div>
+    <div id="ov-footer">
+      <button class="ov-btn send-btn" id="ov-send">&#128228; გაგზავნა / PDF შენახვა</button>
+    </div>
   </div>
 </div>
 
@@ -873,22 +877,23 @@ function init() {
     var guestName = (gel('guest-name').value || '').trim() || 'Guest';
     var guests    = gel('guest-count').value;
     var dt        = getNow();
-    var rows      = buildRows();
+    saveState();
+    var rows = buildRows();
+    var html = buildDesktopPage(guestName, guests, dt, t, rows);
 
     if (isDesktop()) {
-      // Desktop: open receipt in new tab, user uses browser controls
+      // Desktop: open in new tab
       var win = window.open('', '_blank');
-      if (win) { win.document.open(); win.document.write(buildDesktopPage(guestName, guests, dt, t, rows)); win.document.close(); }
+      if (win) { win.document.open(); win.document.write(html); win.document.close(); }
     } else {
-      // Mobile: show overlay summary first, then Send button handles sharing
-      _orderData = { guestName: guestName, guests: guests, dt: dt, t: t };
-      var ob = gel('ov-body');
-      if (ob) ob.innerHTML = buildOverlayHTML(guestName, guests, dt, t, rows);
-      if (ov) { ov.className = 'show'; ov.scrollTop = 0; }
-      window.scrollTo(0, 0);
+      // Mobile: replace current page with receipt
+      // The receipt has one big Share button directly wired to window.print()
+      // which opens native iOS/Android share sheet on direct user tap
+      document.open(); document.write(html); document.close();
     }
   });
 
+  // ov-send kept for fallback but not shown in new flow
   if (os) os.addEventListener('click', function() {
     if (!_orderData) return;
     generateAndSharePDF(_orderData.guestName, _orderData.guests, _orderData.dt, _orderData.t);
