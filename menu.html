@@ -790,17 +790,34 @@ function buildDesktopPage(guestName, guests, dt, t, rows) {
 }
 
 // =============================================================================
-// SHOW RECEIPT — writes the receipt directly into the current page.
-// Works on iOS, Android, desktop — no popups, no blobs, no new tabs.
-// The receipt page has a 📤 button that calls window.print().
-// On iOS Safari: print = native share sheet → PDF, WhatsApp, Mail, Files etc.
-// On Android Chrome: print = system print → Save as PDF.
-// On Desktop: print = browser print dialog → Save as PDF.
+// SHARE RECEIPT
+// 1. Build the receipt as an HTML blob file
+// 2. On Android/iOS: use Web Share API to open native share sheet
+//    → user picks WhatsApp, Telegram, Email, Drive, etc.
+// 3. Fallback: write receipt into current page, user taps print button
 // =============================================================================
 function generateAndSharePDF(guestName, guests, dt, t) {
-  saveState(); // persist quantities so history.back() restores them
+  saveState();
   var rows = buildRows();
   var html = buildDesktopPage(guestName, guests, dt, t, rows);
+  var fileName = 'Order-' + guestName.replace(/\s+/g,'-') + '-' + dt.date + '.html';
+
+  // Try Web Share API (Android Chrome 75+, iOS Safari 15+)
+  // This opens the native OS share sheet with WhatsApp, Telegram, Email etc.
+  if (navigator.share && navigator.canShare) {
+    var file = new File([html], fileName, { type: 'text/html' });
+    if (navigator.canShare({ files: [file] })) {
+      navigator.share({ files: [file], title: MENU_DATA.restaurantName + ' - შეკვეთა' })
+        .catch(function(e) { if (e.name !== 'AbortError') showReceiptPage(html); });
+      return;
+    }
+  }
+
+  // Fallback: write receipt into current tab — user taps the print/share button
+  showReceiptPage(html);
+}
+
+function showReceiptPage(html) {
   document.open();
   document.write(html);
   document.close();
@@ -859,11 +876,11 @@ function init() {
     var rows      = buildRows();
 
     if (isDesktop()) {
-      // Desktop: open new tab → print dialog with Save as PDF option
+      // Desktop: open receipt in new tab, user uses browser controls
       var win = window.open('', '_blank');
       if (win) { win.document.open(); win.document.write(buildDesktopPage(guestName, guests, dt, t, rows)); win.document.close(); }
     } else {
-      // Mobile: show order summary overlay, Send button generates PDF + share sheet
+      // Mobile: show overlay summary first, then Send button handles sharing
       _orderData = { guestName: guestName, guests: guests, dt: dt, t: t };
       var ob = gel('ov-body');
       if (ob) ob.innerHTML = buildOverlayHTML(guestName, guests, dt, t, rows);
@@ -873,9 +890,8 @@ function init() {
   });
 
   if (os) os.addEventListener('click', function() {
-    if (_orderData) {
-      generateAndSharePDF(_orderData.guestName, _orderData.guests, _orderData.dt, _orderData.t);
-    }
+    if (!_orderData) return;
+    generateAndSharePDF(_orderData.guestName, _orderData.guests, _orderData.dt, _orderData.t);
   });
 
   if (oc) oc.addEventListener('click', function() { if (ov) ov.className = ''; });
