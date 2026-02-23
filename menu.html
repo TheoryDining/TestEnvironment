@@ -722,6 +722,7 @@ function buildDesktopPage(guestName, guests, dt, t, rows) {
     '.toolbar{background:#1A1410;padding:14px 20px;display:flex;align-items:center;justify-content:space-between;gap:10px;position:sticky;top:0;z-index:10;}',
     '.toolbar span{color:#aaa;font-size:.75rem;letter-spacing:.04em;}',
     '.back-btn{background:transparent;color:#aaa;border:1px solid #555;padding:10px 16px;border-radius:8px;font-family:\'Noto Sans Georgian\',Georgia,sans-serif;font-size:.9rem;cursor:pointer;}',
+    '@media (hover:hover) and (pointer:fine) and (min-width:900px){.back-btn{display:none;}}',
     /* Big share button — easy to tap on mobile */
     '.tb-btn{background:#C8952A;color:#fff;border:none;padding:12px 24px;border-radius:8px;font-family:\'Noto Sans Georgian\',Georgia,sans-serif;font-size:1rem;font-weight:600;cursor:pointer;white-space:nowrap;}',
     '.receipt{padding:24px 20px;}',
@@ -757,8 +758,8 @@ function buildDesktopPage(guestName, guests, dt, t, rows) {
   ].join('');
 
   var toolbar = '<div class="toolbar">'
-    + '<button class="back-btn" onclick="history.back()">← უკან</button>'
-    + '<button class="tb-btn" onclick="window.print()">📤 გაგზავნა / PDF</button>'
+    + '<button class="back-btn" onclick="history.back()">← მენიუზე დაბრუნება</button>'
+    + '<button class="tb-btn" onclick="window.print()">📤 შენახვა / გაგზავნა</button>'
     + '</div>';
 
   var receipt = '<div class="receipt">'
@@ -797,9 +798,9 @@ function buildDesktopPage(guestName, guests, dt, t, rows) {
 // On Desktop: print = browser print dialog → Save as PDF.
 // =============================================================================
 function generateAndSharePDF(guestName, guests, dt, t) {
+  saveState(); // persist quantities so history.back() restores them
   var rows = buildRows();
   var html = buildDesktopPage(guestName, guests, dt, t, rows);
-  // Write the receipt into the current page — works everywhere, no popup blocker
   document.open();
   document.write(html);
   document.close();
