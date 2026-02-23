@@ -73,13 +73,6 @@ main { max-width:900px; margin:0 auto; padding:24px 16px 200px; }
 .rc-ti .gnd-r td { border-top:2px solid #C8952A; font-family:'Noto Sans Georgian','Playfair Display',serif; font-size:13px; font-weight:700; padding-top:6px; }
 .rc-foot { border-top:1px solid #E2D9CC; padding-top:9px; text-align:center; font-size:8.5px; color:#8B7355; line-height:1.8; }
 </style>
-<style media="print">
-* { -webkit-print-color-adjust:exact !important; print-color-adjust:exact !important; }
-#open-banner, header, .info-bar, .footer-bar, main { display:none !important; }
-#overlay { display:block !important; position:static !important; background:none !important; overflow:visible !important; }
-#ov-panel { margin:0 !important; border-radius:0 !important; }
-#ov-bar { display:none !important; }
-</style>
 </head>
 <body>
 
@@ -119,19 +112,6 @@ main { max-width:900px; margin:0 auto; padding:24px 16px 200px; }
     <div class="val-msg" id="val-msg">Add items to begin</div>
   </div>
   <button class="confirm-btn" id="confirm-btn" disabled>ნახეთ შეკვეთა და გადააგზავნეთ</button>
-</div>
-
-<div id="overlay">
-  <div id="ov-panel">
-    <div id="ov-bar">
-      <span>შეკვეთა</span>
-      <button class="ov-btn close-btn" id="ov-close">&#10005; დახურვა და შეცვლა</button>
-    </div>
-    <div id="ov-body"></div>
-    <div id="ov-footer">
-      <button class="ov-btn send-btn" id="ov-send">&#128228; გაგზავნა / PDF შენახვა</button>
-    </div>
-  </div>
 </div>
 
 <script>
@@ -880,20 +860,9 @@ function init() {
     saveState();
     var rows = buildRows();
     var html = buildDesktopPage(guestName, guests, dt, t, rows);
-
-    if (isDesktop()) {
-      // Desktop: open in new tab
-      var win = window.open('', '_blank');
-      if (win) { win.document.open(); win.document.write(html); win.document.close(); }
-    } else {
-      // Mobile: replace current page with receipt
-      // The receipt has one big Share button directly wired to window.print()
-      // which opens native iOS/Android share sheet on direct user tap
-      document.open(); document.write(html); document.close();
-    }
+    document.open(); document.write(html); document.close();
   });
 
-  // ov-send kept for fallback but not shown in new flow
   if (os) os.addEventListener('click', function() {
     if (!_orderData) return;
     generateAndSharePDF(_orderData.guestName, _orderData.guests, _orderData.dt, _orderData.t);
