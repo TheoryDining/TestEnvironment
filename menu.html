@@ -714,8 +714,77 @@ function buildOverlayHTML(guestName, guests, dt, t, rows) {
 }
 
 function buildDesktopPage(guestName, guests, dt, t, rows) {
-  var css = '*{margin:0;padding:0;box-sizing:border-box;}body{font-family:\'Noto Sans Georgian\',Georgia,sans-serif;color:#1A1410;background:#FAF7F2;}.page{background:#fff;max-width:700px;margin:28px auto;border-radius:12px;overflow:hidden;box-shadow:0 6px 32px rgba(0,0,0,.1);}.toolbar{background:#1A1410;padding:12px 22px;display:flex;align-items:center;justify-content:space-between;gap:10px;}.toolbar span{color:#aaa;font-size:.75rem;letter-spacing:.05em;text-transform:uppercase;}.tb-btn{background:#C8952A;color:#fff;border:none;padding:8px 18px;border-radius:6px;font-family:\'Noto Sans Georgian\',Georgia,sans-serif;font-size:.85rem;cursor:pointer;}.receipt{padding:28px 32px;}h1{font-size:24px;letter-spacing:.03em;}.tag{font-size:8px;text-transform:uppercase;letter-spacing:.14em;color:#8B7355;margin-top:2px;margin-bottom:12px;}hr{border:none;border-top:2px solid #C8952A;margin-bottom:14px;}.meta{display:flex;justify-content:space-between;margin-bottom:14px;font-size:11px;color:#555;}.gn{font-size:15px;font-weight:bold;color:#1A1410;margin-bottom:2px;}.rt{text-align:right;line-height:1.7;}table{width:100%;border-collapse:collapse;margin-bottom:14px;}thead tr{background:#1A1410;}thead th{color:#E8B84B;padding:6px 9px;font-size:8.5px;text-transform:uppercase;letter-spacing:.06em;font-weight:600;text-align:left;}thead th.r{text-align:right;}tbody tr{border-bottom:1px solid #eee;}tbody td{padding:6px 9px;font-size:11px;}.cat-row td{background:#F5E6B8;color:#1A1410;font-weight:bold;font-size:10px;padding:6px 9px;border-top:none;}.r{text-align:right;}.tw{text-align:right;margin-bottom:18px;}.tt{display:inline-table;border-collapse:collapse;min-width:220px;}.tt td{padding:4px 9px;font-size:11px;}.tt .lb{color:#555;}.tt .vl{text-align:right;}.tt .sl td{border-top:1px solid #ddd;color:#555;}.tt .gl td{border-top:2px solid #C8952A;font-size:14px;font-weight:bold;padding-top:7px;}.foot{border-top:1px solid #E2D9CC;padding-top:9px;text-align:center;font-size:9px;color:#8B7355;line-height:1.9;}@media print{*{-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important;}body{background:#fff;}.page{margin:0;border-radius:0;box-shadow:none;}.toolbar{display:none;}@page{margin:10mm;size:A4;}}';
-  return '<!DOCTYPE html><html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Georgian:wght@400;600;700&display=swap" rel="stylesheet"><title>' + MENU_DATA.restaurantName + ' - Order</title><style>' + css + '</style></head><body><div class="page"><div class="toolbar"><span>შეკვეთა - ' + guestName + '</span><button class="tb-btn" onclick="window.print()">🖨 დაბეჭდე / შეინახე PDF</button></div><div class="receipt"><h1>' + MENU_DATA.restaurantName + '</h1><div class="tag">შეკვეთა</div><hr><div class="meta"><div><div class="gn">' + guestName + '</div><div>' + guests + ' სტუმარი' + '</div></div><div class="rt">' + dt.date + '<br>' + dt.time + '</div></div><table><thead><tr><th>დასახელება</th><th class="r">რაოდენობა</th><th class="r">ფასი</th><th class="r">ჯამი</th></tr></thead><tbody>' + rows + '</tbody></table><div class="tw"><table class="tt"><tr><td class="lb">ჯამი</td><td class="vl">' + fmt(t.sub) + '</td></tr><tr class="sl"><td class="lb">მომსახურება 10%</td><td class="vl">' + fmt(t.svc) + '</td></tr><tr class="gl"><td class="lb">მთლიანად</td><td class="vl">' + fmt(t.grand) + '</td></tr></table></div><div class="foot">ფასები მოიცავს დღგ-ს 18%<br>თეორია დაინინგი, პუშკინის ქ. 23, თბილისი, ტელ.: 595-88-88-23</div></div></div></body></html>';
+  var css = [
+    '*{margin:0;padding:0;box-sizing:border-box;}',
+    'body{font-family:\'Noto Sans Georgian\',Georgia,sans-serif;color:#1A1410;background:#FAF7F2;}',
+    '.page{background:#fff;max-width:700px;margin:0 auto;}',
+    /* Toolbar — always visible, not hidden on print */
+    '.toolbar{background:#1A1410;padding:14px 20px;display:flex;align-items:center;justify-content:space-between;gap:10px;position:sticky;top:0;z-index:10;}',
+    '.toolbar span{color:#aaa;font-size:.75rem;letter-spacing:.04em;}',
+    /* Big share button — easy to tap on mobile */
+    '.tb-btn{background:#C8952A;color:#fff;border:none;padding:12px 24px;border-radius:8px;font-family:\'Noto Sans Georgian\',Georgia,sans-serif;font-size:1rem;font-weight:600;cursor:pointer;white-space:nowrap;}',
+    '.receipt{padding:24px 20px;}',
+    'h1{font-size:22px;letter-spacing:.03em;text-align:center;}',
+    '.tag{font-size:8px;text-transform:uppercase;letter-spacing:.14em;color:#8B7355;margin-top:2px;margin-bottom:10px;text-align:center;}',
+    'hr{border:none;border-top:2px solid #C8952A;margin-bottom:14px;}',
+    '.meta{display:flex;justify-content:space-between;margin-bottom:14px;font-size:11px;color:#555;}',
+    '.gn{font-size:14px;font-weight:bold;color:#1A1410;margin-bottom:2px;}',
+    '.rt{text-align:right;line-height:1.7;}',
+    'table{width:100%;border-collapse:collapse;margin-bottom:14px;}',
+    'thead tr{background:#1A1410;}',
+    'thead th{color:#E8B84B;padding:7px 8px;font-size:8px;text-transform:uppercase;letter-spacing:.06em;font-weight:600;text-align:left;}',
+    'thead th.r{text-align:right;}',
+    'tbody tr{border-bottom:1px solid #eee;}',
+    'tbody td{padding:7px 8px;font-size:11px;}',
+    '.cat-row td{background:#F5E6B8;color:#1A1410;font-weight:bold;font-size:10px;padding:7px 8px;}',
+    '.r{text-align:right;}',
+    '.tw{text-align:right;margin-bottom:18px;}',
+    '.tt{display:inline-table;border-collapse:collapse;min-width:220px;}',
+    '.tt td{padding:5px 8px;font-size:11px;}',
+    '.tt .lb{color:#555;}',
+    '.tt .vl{text-align:right;}',
+    '.tt .sl td{border-top:1px solid #ddd;color:#555;}',
+    '.tt .gl td{border-top:2px solid #C8952A;font-size:14px;font-weight:bold;padding-top:8px;}',
+    '.foot{border-top:1px solid #E2D9CC;padding-top:9px;text-align:center;font-size:9px;color:#8B7355;line-height:1.9;margin-top:4px;}',
+    '@media print{',
+    '  *{-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important;}',
+    '  body{background:#fff;}',
+    '  .toolbar{display:none;}',
+    '  .page{max-width:100%;}',
+    '  @page{margin:10mm;size:A4;}',
+    '}'
+  ].join('');
+
+  var toolbar = '<div class="toolbar">'
+    + '<span>' + guestName + ' &nbsp;|&nbsp; ' + dt.date + '</span>'
+    + '<button class="tb-btn" onclick="window.print()">📤 გაგზავნა / PDF</button>'
+    + '</div>';
+
+  var receipt = '<div class="receipt">'
+    + '<h1>' + MENU_DATA.restaurantName + '</h1>'
+    + '<div class="tag">შეკვეთა</div>'
+    + '<hr>'
+    + '<div class="meta"><div><div class="gn">' + guestName + '</div><div>' + guests + ' სტუმარი</div></div>'
+    + '<div class="rt">' + dt.date + '<br>' + dt.time + '</div></div>'
+    + '<table><thead><tr><th>დასახელება</th><th class="r">რაოდ.</th><th class="r">ფასი</th><th class="r">ჯამი</th></tr></thead>'
+    + '<tbody>' + rows + '</tbody></table>'
+    + '<div class="tw"><table class="tt">'
+    + '<tr><td class="lb">ჯამი</td><td class="vl">' + fmt(t.sub) + '</td></tr>'
+    + '<tr class="sl"><td class="lb">მომსახურება 10%</td><td class="vl">' + fmt(t.svc) + '</td></tr>'
+    + '<tr class="gl"><td class="lb">მთლიანად</td><td class="vl">' + fmt(t.grand) + '</td></tr>'
+    + '</table></div>'
+    + '<div class="foot">ფასები მოიცავს დღგ-ს 18%<br>თეორია დაინინგი, პუშკინის ქ. 23, თბილისი, ტელ.: 595-88-88-23</div>'
+    + '</div>';
+
+  return '<!DOCTYPE html><html><head>'
+    + '<meta charset="UTF-8">'
+    + '<meta name="viewport" content="width=device-width,initial-scale=1">'
+    + '<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Georgian:wght@400;600;700&display=swap" rel="stylesheet">'
+    + '<title>' + MENU_DATA.restaurantName + ' - შეკვეთა</title>'
+    + '<style>' + css + '</style>'
+    + '</head><body>'
+    + '<div class="page">' + toolbar + receipt + '</div>'
+    + '</body></html>';
 }
 
 // =============================================================================
